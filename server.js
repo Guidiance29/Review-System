@@ -10,16 +10,16 @@ app.use(cors());
 
 const reviewsFilePath = path.join(__dirname, 'reviews.json');
 
-// Create the file if it doesn't exist
+// Ensure the reviews.json file exists
 if (!fs.existsSync(reviewsFilePath)) {
-    fs.writeFileSync(reviewsFilePath, '[]');
+    fs.writeFileSync(reviewsFilePath, '[]', 'utf-8');
 }
 
 app.post('/submit-review', (req, res) => {
     const { name, review, rating, imageUrl } = req.body;
 
     if (!name || !review || !rating) {
-        return res.status(400).send('All fields are required');
+        return res.status(400).json({ message: 'All fields are required' });
     }
 
     const newReview = { name, review, rating, imageUrl };
@@ -27,7 +27,7 @@ app.post('/submit-review', (req, res) => {
     fs.readFile(reviewsFilePath, (err, data) => {
         if (err) {
             console.error('Error reading reviews file:', err);
-            return res.status(500).send('Server error');
+            return res.status(500).json({ message: 'Server error' });
         }
 
         let reviews = [];
@@ -40,10 +40,10 @@ app.post('/submit-review', (req, res) => {
         fs.writeFile(reviewsFilePath, JSON.stringify(reviews, null, 2), (err) => {
             if (err) {
                 console.error('Error writing to reviews file:', err);
-                return res.status(500).send('Server error');
+                return res.status(500).json({ message: 'Server error' });
             }
 
-            res.status(200).send('Review submitted successfully');
+            return res.status(200).json({ message: 'Review submitted successfully' });
         });
     });
 });
@@ -52,10 +52,10 @@ app.get('/reviews', (req, res) => {
     fs.readFile(reviewsFilePath, (err, data) => {
         if (err) {
             console.error('Error reading reviews file:', err);
-            return res.status(500).send('Server error');
+            return res.status(500).json({ message: 'Server error' });
         }
 
-        res.status(200).send(data);
+        res.status(200).json(JSON.parse(data));
     });
 });
 
